@@ -1,0 +1,9 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "build",
+  "framework": "react",
+  "env": {
+    "REACT_APP_STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key",
+    "REACT_APP_API_URL": "@api_url"
+  }
+}
