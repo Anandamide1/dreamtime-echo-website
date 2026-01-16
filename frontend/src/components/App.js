@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import Cart from './components/Cart';
-import Checkout from './components/Checkout';
-import './App.css';
+import { Analytics } from '@vercel/analytics/react';
+import Cart from './Cart';
+import Checkout from './Checkout';
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -130,6 +130,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gradient">
+      <Analytics />
       {/* Navigation */}
       <nav className="navbar">
         <div className="nav-container">
