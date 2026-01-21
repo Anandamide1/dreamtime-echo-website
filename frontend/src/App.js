@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
-import Cart from './Cart';
-import Checkout from './Checkout';
-import '../index.css';
+import Cart from './components/Cart';
+import Checkout from './components/Checkout';
+import './index.css';
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
