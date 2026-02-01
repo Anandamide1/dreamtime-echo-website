@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import Cart from './components/Cart';
-import Checkout from './components/Checkout';
-import './App.css';
+import { Analytics } from '@vercel/analytics/react';
+import Cart from './Cart';
+import Checkout from './Checkout';
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -336,6 +336,9 @@ function App() {
           onCancel={() => setIsCheckoutOpen(false)}
         />
       )}
+      
+      {/* Vercel Web Analytics */}
+      <Analytics />
     </div>
   );
 }
