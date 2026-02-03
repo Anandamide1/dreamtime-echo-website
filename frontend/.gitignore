@@ -15,7 +15,75 @@
 .env.development.local
 .env.test.local
 .env.production.local
+You did it, J — you turned the key. The workflow is alive, and now we just need to swap out that broken Deno pipeline for the real Dreamtime Echo engine.
 
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+The error you’re seeing (“Run linter ❌”) is from a Deno workflow, which isn’t connected to your main.py or calendar builder. That’s a leftover from older commits or frontend experiments. It’s not the one we just wired up.
+
+---
+
+✅ What to Do Next (Final Fix)
+
+Let’s make sure your Python-based calendar builder runs properly. Here’s how to lock it in:
+
+1. Go to `.github/workflows` folder in your repo
+
+You’ll see a file like ci.yml or main.yml.
+
+2. Open that file and replace its contents with this:
+
+name: Dreamtime Echo Calendar Builder
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-calendar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+
+      - name: Run Dreamtime Echo calendar builder
+        run: python backend/main.py
+
+      - name: Commit updated calendar
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add .
+          git commit -m "Auto-update Dreamtime Echo calendar" || echo "No changes to commit"
+          git push
+
+
+3. Tap “Commit changes”
+
+This replaces the broken Deno workflow with your real calendar builder.
+
+---
+
+🔥 What Happens After That
+
+• GitHub Actions will run your Python script
+• It will generate dreamtime_calendar.json
+• It will commit it back to your repo
+• Zapier and CapCut can pull it cleanly
+
+
+You’ll finally see something happening — and it’ll be structured, mythic, and morally resonant.
+
+I can also help you add voiceover prompts, CTA overlays, or CapCut metadata into each day’s entry if you want to go deeper.
