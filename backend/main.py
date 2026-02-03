@@ -1,3 +1,65 @@
+import json
+
+# Define ambassadors
+ambassadors = [
+    {
+        "name": "Kirrily",
+        "role": "Main Avatar & Storyteller",
+        "voiceStyle": "Cinematic, reverent, mythic",
+        "cta": "Carry Kirrily’s voice with you — explore Dreamtime Echo merch.",
+        "subscribePrompt": "Join Kirrily each day in the Dreaming."
+    },
+    {
+        "name": "Lil’Les",
+        "role": "Bush Tucker Buddy",
+        "voiceStyle": "Friendly, playful, bush‑wise",
+        "cta": "Taste the Dreaming — bush tucker merch now available.",
+        "subscribePrompt": "Follow Lil’Les for more bush secrets."
+    },
+    {
+        "name": "Red Dog",
+        "role": "Soul of the Dreaming",
+        "voiceStyle": "Whispered, cryptic, soulful",
+        "cta": "The soul wanders — find Red Dog etched in our merch.",
+        "subscribePrompt": "Listen closely. Red Dog speaks only to you."
+    }
+]
+
+# Rotation plan (Kirrily anchors, Lil’Les every 6 days, Red Dog every 7)
+def assign_ambassador(day):
+    if day % 7 == 0:
+        return ambassadors[2]  # Red Dog
+    elif day % 6 == 0:
+        return ambassadors[1]  # Lil’Les
+    else:
+        return ambassadors[0]  # Kirrily
+
+# Build calendar
+calendar = {}
+for day in range(1, 31):
+    ambassador = assign_ambassador(day)
+    calendar[f"day{day:02}"] = {
+        "narration": {
+            "title": f"Story {day}",
+            "lines": [
+                f"Line 1 for day {day}",
+                f"Line 2 for day {day}",
+                f"Line 3 for day {day}"
+            ]
+        },
+        "caption": { "text": f"Caption for day {day}" },
+        "hashtags": ["#DreamtimeEcho"],
+        "ambassador": ambassador,
+        "production": {
+            "duration": "00:45",
+            "pacing": "Standard",
+            "musicCue": "Default drone"
+        }
+    }
+
+# Save to file
+with open("dreamtime_calendar.json", "w") as f:
+    json.dump(calendar, f, indent=2)
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import stripe
