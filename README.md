@@ -1,1 +1,1 @@
-australian themed digited products avatars an stiry telling templates
+australian themed digited products avatars an story telling templates
