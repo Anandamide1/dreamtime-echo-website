@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
+import { Analytics } from '@vercel/analytics/react';
 import Cart from './components/Cart';
 import Checkout from './components/Checkout';
 import './index.css';
@@ -340,6 +341,8 @@ function App() {
 
       {/* Vercel Speed Insights */}
       <SpeedInsights />
+      {/* Vercel Web Analytics */}
+      <Analytics />
     </div>
   );
 }
