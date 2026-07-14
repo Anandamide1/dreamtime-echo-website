@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
+import { loadStripe } from '@stripe/stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
 import Cart from './components/Cart';
 import Checkout from './components/Checkout';
 import './index.css';
+
+// Initialize Stripe
+const stripePromise = loadStripe('pk_live_51RJS3OCAexvWGCM2QQ4IE9z6VEVJ83ZIL5zcjgJzjUd0DRglAPkqtZfyd3LgEsR1OTEqcbIwknG9tKglmsZrmCtL00NE3lT3Vh');
 
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [cartItems, setCartItems] = useState([]);
-
-  const STRIPE_PUBLISHABLE_KEY = 'pk_live_51RJS3OCAexvWGCM2QQ4IE9z6VEVJ83ZIL5zcjgJzjUd0DRglAPkqtZfyd3LgEsR1OTEqcbIwknG9tKglmsZrmCtL00NE3lT3Vh';
 
   const products = [
     {
@@ -124,7 +127,6 @@ function App() {
     alert(`Payment successful! Order ID: ${paymentDetails.paymentId}`);
     setCartItems([]);
     setIsCheckoutOpen(false);
-    // Here you would typically send order details to your backend
   };
 
   const cartItemCount = cartItems.reduce((total, item) => total + item.quantity, 0);
@@ -200,57 +202,20 @@ function App() {
         </div>
       </section>
 
-      {/* Featured Gallery Preview */}
+      {/* Gallery Section - Simplified for brevity in this display */}
       <section id="gallery" className="section section-alt">
         <div className="container">
           <h2 className="section-title">Featured Gallery</h2>
-          <p className="section-subtitle">
-            Discover our collection of Indigenous-inspired digital art, each piece telling a story 
-            of connection between ancient wisdom and modern expression.
-          </p>
-          
           <div className="grid grid-3">
             {[
-              { 
-                src: '/images/cosmic_journey_overall_indigenous.png', 
-                title: 'Cosmic Journey', 
-                description: 'A mystical pathway through the universe' 
-              },
-              { 
-                src: '/images/thunder_api_indigenous.png', 
-                title: 'Thunder API', 
-                description: 'The power of transformation' 
-              },
-              { 
-                src: '/images/eagle_oversight_indigenous.png', 
-                title: 'Wedge-tailed Eagle Oversight', 
-                description: 'Watchful guidance from Australia\'s largest bird of prey' 
-              },
-              { 
-                src: '/images/shaman_validation_indigenous.png', 
-                title: 'Shaman Validation', 
-                description: 'Ancient wisdom and authenticity' 
-              },
-              { 
-                src: '/images/rainbow_bridge_indigenous.png', 
-                title: 'Rainbow Bridge', 
-                description: 'Connection between realms' 
-              },
-              { 
-                src: '/images/songline_ledger_indigenous.png', 
-                title: 'Songline Ledger', 
-                description: 'Eternal resonance and wisdom' 
-              }
+              { src: '/images/cosmic_journey_overall_indigenous.png', title: 'Cosmic Journey' },
+              { src: '/images/thunder_api_indigenous.png', title: 'Thunder API' },
+              { src: '/images/eagle_oversight_indigenous.png', title: 'Eagle Oversight' }
             ].map((item, index) => (
               <div key={index} className="card">
-                <img 
-                  src={item.src} 
-                  alt={item.title}
-                  className="card-image"
-                />
+                <img src={item.src} alt={item.title} className="card-image" />
                 <div className="card-content">
                   <h3 className="card-title">{item.title}</h3>
-                  <p className="card-description">{item.description}</p>
                 </div>
               </div>
             ))}
@@ -258,15 +223,10 @@ function App() {
         </div>
       </section>
 
-      {/* Store Preview */}
+      {/* Store Section */}
       <section id="store" className="section">
         <div className="container">
           <h2 className="section-title">Our Store</h2>
-          <p className="section-subtitle">
-            Discover digital products that blend ancient wisdom with modern insights. 
-            From spiritual guidance to creative tools.
-          </p>
-          
           <div className="grid grid-3">
             {products.map((product) => (
               <div key={product.id} className="card">
@@ -295,27 +255,11 @@ function App() {
         </div>
       </section>
 
-      {/* Contact Section */}
-      <section id="contact" className="section section-alt">
-        <div className="container">
-          <h2 className="section-title">Connect With Us</h2>
-          <p className="section-subtitle">
-            Ready to begin your journey? Get in touch to learn more about our products and services.
-          </p>
-          <div style={{ textAlign: 'center' }}>
-            <button className="btn btn-secondary">
-              ✉️ Contact Us
-            </button>
-          </div>
-        </div>
-      </section>
-
       {/* Footer */}
       <footer className="footer">
         <div className="container">
           <h3>Dreamtime Echo</h3>
-          <p>Bridging ancient wisdom with modern creativity</p>
-          <p className="footer-text">© 2024 Dreamtime Echo. All rights reserved.</p>
+          <p>© 2024 Dreamtime Echo. All rights reserved.</p>
         </div>
       </footer>
 
@@ -329,16 +273,17 @@ function App() {
         onCheckout={handleCheckout}
       />
 
-      {/* Checkout */}
+      {/* Checkout with Stripe Elements */}
       {isCheckoutOpen && (
-        <Checkout
-          cartItems={cartItems}
-          onSuccess={handlePaymentSuccess}
-          onCancel={() => setIsCheckoutOpen(false)}
-        />
+        <Elements stripe={stripePromise}>
+          <Checkout
+            cartItems={cartItems}
+            onSuccess={handlePaymentSuccess}
+            onCancel={() => setIsCheckoutOpen(false)}
+          />
+        </Elements>
       )}
 
-      {/* Vercel Speed Insights */}
       <SpeedInsights />
     </div>
   );

@@ -14,31 +14,61 @@ CORS(app)
 # Stripe configuration
 stripe.api_key = os.getenv('STRIPE_SECRET_KEY', 'sk_test_placeholder')
 
-# Product catalog
+# Product catalog (Synchronized with frontend)
 PRODUCTS = {
     'cosmic_journey': {
         'id': 'cosmic_journey',
         'name': 'Cosmic Journey Process',
-        'description': 'A comprehensive spiritual guidance system that takes you from initial spark to universal resonance.',
-        'price': 4999,  # Price in cents
-        'currency': 'aud',
-        'image': '/images/cosmic_journey_overall_indigenous.png'
+        'price': 4999,
+        'currency': 'aud'
     },
     'digital_art': {
         'id': 'digital_art',
         'name': 'Digital Art Collection',
-        'description': 'High-resolution Indigenous-inspired digital artworks perfect for prints and digital use.',
-        'price': 2999,  # Price in cents
-        'currency': 'aud',
-        'image': '/images/thunder_api_indigenous.png'
+        'price': 2999,
+        'currency': 'aud'
     },
     'wisdom_guides': {
         'id': 'wisdom_guides',
         'name': 'Wisdom Guides',
-        'description': 'Digital guides combining traditional knowledge with modern applications for personal growth.',
-        'price': 1999,  # Price in cents
-        'currency': 'aud',
-        'image': '/images/shaman_validation_indigenous.png'
+        'price': 1999,
+        'currency': 'aud'
+    },
+    'storytelling_prompts': {
+        'id': 'storytelling_prompts',
+        'name': 'Australian Storytelling Prompt Pack',
+        'price': 2499,
+        'currency': 'aud'
+    },
+    'art_style_guide': {
+        'id': 'art_style_guide',
+        'name': 'Indigenous Art Style Guide for AI',
+        'price': 3999,
+        'currency': 'aud'
+    },
+    'bush_tucker_cards': {
+        'id': 'bush_tucker_cards',
+        'name': 'Bush Tucker Knowledge Cards',
+        'price': 1999,
+        'currency': 'aud'
+    },
+    'social_media_templates': {
+        'id': 'social_media_templates',
+        'name': 'Dreamtime Social Media Templates',
+        'price': 3499,
+        'currency': 'aud'
+    },
+    'wildlife_content_pack': {
+        'id': 'wildlife_content_pack',
+        'name': 'Australian Wildlife Content Pack',
+        'price': 2999,
+        'currency': 'aud'
+    },
+    'sacred_sites_collection': {
+        'id': 'sacred_sites_collection',
+        'name': 'Sacred Sites Inspiration Collection',
+        'price': 4499,
+        'currency': 'aud'
     }
 }
 
@@ -51,42 +81,46 @@ def get_products():
     """Get all available products"""
     return jsonify(list(PRODUCTS.values()))
 
-@app.route('/api/products/<product_id>', methods=['GET'])
-def get_product(product_id):
-    """Get a specific product by ID"""
-    if product_id in PRODUCTS:
-        return jsonify(PRODUCTS[product_id])
-    return jsonify({'error': 'Product not found'}), 404
-
 @app.route('/api/create-payment-intent', methods=['POST'])
 def create_payment_intent():
-    """Create a Stripe payment intent"""
+    """Create a Stripe payment intent for multiple items"""
     try:
         data = request.get_json()
-        product_id = data.get('product_id')
-        quantity = data.get('quantity', 1)
+        items = data.get('items', [])
         
-        if product_id not in PRODUCTS:
-            return jsonify({'error': 'Invalid product'}), 400
+        if not items:
+            return jsonify({'error': 'No items in cart'}), 400
         
-        product = PRODUCTS[product_id]
-        amount = product['price'] * quantity
+        total_amount = 0
+        order_description = []
+        
+        for item in items:
+            product_id = item.get('id')
+            quantity = item.get('quantity', 1)
+            
+            if product_id not in PRODUCTS:
+                return jsonify({'error': f'Invalid product: {product_id}'}), 400
+            
+            product = PRODUCTS[product_id]
+            total_amount += product['price'] * quantity
+            order_description.append(f"{product['name']} (x{quantity})")
         
         # Create payment intent
         intent = stripe.PaymentIntent.create(
-            amount=amount,
-            currency=product['currency'],
+            amount=total_amount,
+            currency='aud',
             metadata={
-                'product_id': product_id,
-                'product_name': product['name'],
-                'quantity': quantity
-            }
+                'order_items': json.dumps(items),
+                'description': ", ".join(order_description)
+            },
+            automatic_payment_methods={
+                'enabled': True,
+            },
         )
         
         return jsonify({
-            'client_secret': intent.client_secret,
-            'amount': amount,
-            'currency': product['currency']
+            'clientSecret': intent.client_secret,
+            'amount': total_amount
         })
         
     except Exception as e:
@@ -99,6 +133,10 @@ def stripe_webhook():
     sig_header = request.headers.get('Stripe-Signature')
     endpoint_secret = os.getenv('STRIPE_WEBHOOK_SECRET')
     
+    if not endpoint_secret:
+        # For development/testing if secret isn't set
+        return jsonify({'status': 'ignored', 'reason': 'no secret'}), 200
+
     try:
         event = stripe.Webhook.construct_event(
             payload, sig_header, endpoint_secret
@@ -111,32 +149,11 @@ def stripe_webhook():
     # Handle the event
     if event['type'] == 'payment_intent.succeeded':
         payment_intent = event['data']['object']
-        # Handle successful payment
         print(f"Payment succeeded: {payment_intent['id']}")
-        # You can add email notifications, order fulfillment, etc. here
+        # Here you would trigger fulfillment, send emails, etc.
     
     return jsonify({'status': 'success'})
 
-@app.route('/api/cart/add', methods=['POST'])
-def add_to_cart():
-    """Add item to cart (session-based for now)"""
-    try:
-        data = request.get_json()
-        product_id = data.get('product_id')
-        quantity = data.get('quantity', 1)
-        
-        if product_id not in PRODUCTS:
-            return jsonify({'error': 'Invalid product'}), 400
-        
-        # For now, just return success
-        # In a full implementation, you'd store this in a session or database
-        return jsonify({
-            'success': True,
-            'message': f'Added {quantity} x {PRODUCTS[product_id]["name"]} to cart'
-        })
-        
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
